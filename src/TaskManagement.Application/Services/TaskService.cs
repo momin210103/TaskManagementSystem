@@ -12,14 +12,20 @@ public class TaskService : ITaskService
 {
     private readonly ITaskRepository _taskRepository;
     private readonly ICurrentUserService _currentUserService;
+    private readonly INotificationService _notificationService;
 
-    public TaskService(ITaskRepository taskRepository, ICurrentUserService currentUserService)
+    public TaskService(
+        ITaskRepository taskRepository,
+        ICurrentUserService currentUserService,
+        INotificationService notificationService)
     {
         ArgumentNullException.ThrowIfNull(taskRepository);
         ArgumentNullException.ThrowIfNull(currentUserService);
+        ArgumentNullException.ThrowIfNull(notificationService);
 
         _taskRepository = taskRepository;
         _currentUserService = currentUserService;
+        _notificationService = notificationService;
     }
 
     public async Task<TaskResponse> CreateTaskAsync(CreateTaskRequest request, CancellationToken cancellationToken = default)
@@ -58,6 +64,16 @@ public class TaskService : ITaskService
         };
 
         await _taskRepository.CreateAsync(task, cancellationToken).ConfigureAwait(false);
+
+        if (task.AssignedToId != Guid.Empty)
+        {
+            await _notificationService.CreateNotificationAsync(
+                task.AssignedToId,
+                task.Id,
+                NotificationType.Assignment,
+                $"You have been assigned a new task: {task.Title}",
+                cancellationToken).ConfigureAwait(false);
+        }
 
         return await _taskRepository.GetResponseByIdAsync(task.Id, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException($"Task with ID '{task.Id}' was not found.");
@@ -160,10 +176,24 @@ public class TaskService : ITaskService
 
         await AuthorizeStatusUpdateAsync(task, currentUserId, cancellationToken).ConfigureAwait(false);
 
-        task.Status = request.Status;
-        task.UpdatedAt = DateTime.UtcNow;
+        var oldStatus = task.Status;
+        if (oldStatus != request.Status)
+        {
+            task.Status = request.Status;
+            task.UpdatedAt = DateTime.UtcNow;
 
-        await _taskRepository.UpdateAsync(task, cancellationToken).ConfigureAwait(false);
+            await _taskRepository.UpdateAsync(task, cancellationToken).ConfigureAwait(false);
+
+            if (task.AssignedToId != Guid.Empty)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    task.AssignedToId,
+                    task.Id,
+                    NotificationType.StatusUpdate,
+                    $"You have a status update for task: {task.Title}",
+                    cancellationToken).ConfigureAwait(false);
+            }
+        }
 
         return await _taskRepository.GetResponseByIdAsync(id, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException($"Task with ID '{id}' was not found.");
@@ -198,6 +228,13 @@ public class TaskService : ITaskService
         task.UpdatedAt = DateTime.UtcNow;
 
         await _taskRepository.UpdateAsync(task, cancellationToken).ConfigureAwait(false);
+
+        await _notificationService.CreateNotificationAsync(
+            request.AssignedToId,
+            task.Id,
+            NotificationType.Assignment,
+            $"You have been assigned a new task: {task.Title}",
+            cancellationToken).ConfigureAwait(false);
 
         return await _taskRepository.GetResponseByIdAsync(id, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException($"Task with ID '{id}' was not found.");

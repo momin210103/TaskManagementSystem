@@ -14,11 +14,12 @@ public sealed class TaskServiceTests
 {
     private readonly TestTaskRepository _taskRepository = new();
     private readonly TestCurrentUserService _currentUserService = new();
+    private readonly TestNotificationService _notificationService = new();
     private readonly TaskService _taskService;
 
     public TaskServiceTests()
     {
-        _taskService = new TaskService(_taskRepository, _currentUserService);
+        _taskService = new TaskService(_taskRepository, _currentUserService, _notificationService);
     }
 
     [Fact]
@@ -522,6 +523,153 @@ public sealed class TaskServiceTests
         }
     }
 
+    [Fact]
+    public async Task CreateTaskAsync_CreatesAssignmentNotificationForAssignee()
+    {
+        var adminId = Guid.NewGuid();
+        var teamId = Guid.NewGuid();
+        var assigneeId = Guid.NewGuid();
+
+        _currentUserService.SetUser(adminId, "admin@test.com", UserRole.Admin.ToString());
+        _taskRepository.ExistingTeams.Add(teamId);
+        _taskRepository.ExistingUsers.Add(assigneeId);
+        _taskRepository.UserTeamMap[assigneeId] = teamId;
+
+        var request = new CreateTaskRequest
+        {
+            Title = "Task with Notification",
+            Deadline = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)),
+            TeamId = teamId,
+            AssignedToId = assigneeId
+        };
+
+        var result = await _taskService.CreateTaskAsync(request);
+
+        Assert.NotNull(result);
+        Assert.Single(_notificationService.CreatedNotifications);
+        var notification = _notificationService.CreatedNotifications[0];
+        Assert.Equal(assigneeId, notification.UserId);
+        Assert.Equal(NotificationType.Assignment, notification.Type);
+        Assert.Contains("Task with Notification", notification.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task AssignTaskAsync_CreatesAssignmentNotificationForNewAssignee()
+    {
+        var managerId = Guid.NewGuid();
+        var teamId = Guid.NewGuid();
+        var initialAssigneeId = Guid.NewGuid();
+        var newAssigneeId = Guid.NewGuid();
+        var taskId = Guid.NewGuid();
+
+        _currentUserService.SetUser(managerId, "manager@test.com", UserRole.Manager.ToString());
+        _taskRepository.TeamManagerMap[teamId] = managerId;
+        _taskRepository.ExistingUsers.Add(newAssigneeId);
+        _taskRepository.UserTeamMap[newAssigneeId] = teamId;
+
+        var task = new TaskItem
+        {
+            Id = taskId,
+            Title = "Reassigned Task",
+            TeamId = teamId,
+            AssignedToId = initialAssigneeId
+        };
+        _taskRepository.TasksMap[taskId] = task;
+
+        await _taskService.AssignTaskAsync(taskId, new AssignTaskRequest { AssignedToId = newAssigneeId });
+
+        Assert.Single(_notificationService.CreatedNotifications);
+        var notification = _notificationService.CreatedNotifications[0];
+        Assert.Equal(newAssigneeId, notification.UserId);
+        Assert.Equal(NotificationType.Assignment, notification.Type);
+        Assert.Contains("Reassigned Task", notification.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task UpdateTaskStatusAsync_WhenStatusChanges_CreatesStatusNotification()
+    {
+        var userId = Guid.NewGuid();
+        var taskId = Guid.NewGuid();
+
+        _currentUserService.SetUser(userId, "user@test.com", UserRole.User.ToString());
+
+        var task = new TaskItem
+        {
+            Id = taskId,
+            Title = "Status Update Task",
+            Status = TaskStatus.ToDo,
+            AssignedToId = userId,
+            TeamId = Guid.NewGuid()
+        };
+        _taskRepository.TasksMap[taskId] = task;
+
+        await _taskService.UpdateTaskStatusAsync(taskId, new UpdateTaskStatusRequest { Status = TaskStatus.InProgress });
+
+        Assert.Single(_notificationService.CreatedNotifications);
+        var notification = _notificationService.CreatedNotifications[0];
+        Assert.Equal(userId, notification.UserId);
+        Assert.Equal(NotificationType.StatusUpdate, notification.Type);
+        Assert.Contains("Status Update Task", notification.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task UpdateTaskStatusAsync_WhenStatusUnchanged_DoesNotCreateNotification()
+    {
+        var userId = Guid.NewGuid();
+        var taskId = Guid.NewGuid();
+
+        _currentUserService.SetUser(userId, "user@test.com", UserRole.User.ToString());
+
+        var task = new TaskItem
+        {
+            Id = taskId,
+            Title = "Same Status Task",
+            Status = TaskStatus.InProgress,
+            AssignedToId = userId,
+            TeamId = Guid.NewGuid()
+        };
+        _taskRepository.TasksMap[taskId] = task;
+
+        await _taskService.UpdateTaskStatusAsync(taskId, new UpdateTaskStatusRequest { Status = TaskStatus.InProgress });
+
+        Assert.Empty(_notificationService.CreatedNotifications);
+    }
+
+    private sealed class TestNotificationService : INotificationService
+    {
+        public List<(Guid UserId, Guid? TaskId, NotificationType Type, string Message)> CreatedNotifications { get; } = [];
+
+        public Task<PagedResult<TaskManagement.Application.DTOs.Notifications.NotificationResponse>> GetNotificationsAsync(
+            TaskManagement.Application.DTOs.Notifications.NotificationQueryParameters parameters,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new PagedResult<TaskManagement.Application.DTOs.Notifications.NotificationResponse>());
+        }
+
+        public Task<TaskManagement.Application.DTOs.Notifications.NotificationResponse> MarkAsReadAsync(
+            Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(new TaskManagement.Application.DTOs.Notifications.NotificationResponse { Id = id, IsRead = true });
+        }
+
+        public Task MarkAllAsReadAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task CreateNotificationAsync(
+            Guid userId,
+            Guid? taskId,
+            NotificationType type,
+            string message,
+            CancellationToken cancellationToken = default)
+        {
+            CreatedNotifications.Add((userId, taskId, type, message));
+            return Task.CompletedTask;
+        }
+    }
+
     private sealed class TestCurrentUserService : ICurrentUserService
     {
         public Guid? UserId { get; private set; }
@@ -542,4 +690,5 @@ public sealed class TaskServiceTests
         }
     }
 }
+
 

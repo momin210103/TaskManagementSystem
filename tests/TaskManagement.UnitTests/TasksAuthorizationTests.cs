@@ -50,7 +50,9 @@ public sealed class TasksAuthorizationTests : IDisposable
 
         _taskRepository = new TaskRepository(_dbContext);
         _currentUserService = new TestCurrentUserService();
-        _taskService = new TaskService(_taskRepository, _currentUserService);
+        var notificationRepository = new NotificationRepository(_dbContext);
+        var notificationService = new NotificationService(notificationRepository, _currentUserService);
+        _taskService = new TaskService(_taskRepository, _currentUserService, notificationService);
 
         DatabaseSeeder.SeedAsync(_serviceProvider).GetAwaiter().GetResult();
     }
