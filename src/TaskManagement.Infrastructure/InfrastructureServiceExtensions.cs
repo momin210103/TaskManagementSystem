@@ -37,6 +37,7 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<ITaskRepository, TaskRepository>();
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
 
         return services;
     }

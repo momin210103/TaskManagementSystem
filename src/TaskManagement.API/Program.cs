@@ -13,6 +13,7 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
