@@ -33,9 +33,8 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IUserService, TaskManagement.Application.Services.UserService>();
         services.AddScoped<ITeamRepository, TeamRepository>();
-        services.AddScoped<ITeamService, TaskManagement.Application.Services.TeamService>();
+        services.AddScoped<ITaskRepository, TaskRepository>();
 
         return services;
     }

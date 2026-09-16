@@ -1,4 +1,6 @@
 using Microsoft.OpenApi;
+using TaskManagement.Application.Interfaces;
+using TaskManagement.Application.Services;
 using TaskManagement.Infrastructure;
 using TaskManagement.Infrastructure.Persistence;
 
@@ -6,6 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
