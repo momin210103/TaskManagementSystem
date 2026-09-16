@@ -9,9 +9,7 @@ import {
   MessageSquare,
   Send,
   Trash2,
-  Edit2,
-  AlertTriangle,
-  CheckCircle2
+  Edit2
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { taskService } from '../../services/taskService';
@@ -19,7 +17,7 @@ import { commentService } from '../../services/commentService';
 import { teamService } from '../../services/teamService';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { PriorityBadge } from '../../components/common/PriorityBadge';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { Skeleton } from '../../components/common/SkeletonLoader';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { EmptyState } from '../../components/common/EmptyState';
 import { ConfirmDialog } from '../../components/common/ConfirmDialog';
@@ -64,7 +62,7 @@ export function TaskDetailsPage() {
         commentService.getComments(id)
       ]);
       setTask(taskData);
-      setComments(commentsData);
+      setComments(commentsData || []);
     } catch (err) {
       setError(err.message || 'Failed to load task details.');
     } finally {
@@ -154,14 +152,31 @@ export function TaskDetailsPage() {
   };
 
   if (isLoading) {
-    return <LoadingSpinner fullScreen text="Loading task details..." />;
+    return (
+      <div className="space-y-6 max-w-5xl mx-auto p-4 animate-fade-in">
+        <Skeleton className="h-6 w-32" />
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-6 space-y-4">
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-20 w-full" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!task && !isLoading) {
     return (
-      <div className="p-8">
+      <div className="p-6 max-w-lg mx-auto text-center space-y-4">
         <ErrorMessage message={error || 'Task not found.'} />
-        <Link to="/tasks" className="inline-flex items-center gap-2 text-indigo-600 font-semibold hover:underline mt-4">
+        <Link
+          to="/tasks"
+          className="inline-flex items-center gap-2 text-sm font-bold text-indigo-600 hover:text-indigo-800"
+        >
           <ArrowLeft className="w-4 h-4" /> Back to Tasks
         </Link>
       </div>
@@ -169,33 +184,33 @@ export function TaskDetailsPage() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto animate-fade-in">
-      {/* Top Breadcrumb & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 sm:space-y-8 max-w-5xl mx-auto animate-fade-in">
+      {/* Top Breadcrumb & Action Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
         <Link
           to="/tasks"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Tasks
         </Link>
 
         {canManage && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setIsEditModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm"
             >
               <Edit2 className="w-3.5 h-3.5" /> Edit
             </button>
             <button
               onClick={handleOpenAssignModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-xl hover:bg-indigo-100 transition-colors"
             >
               <User className="w-3.5 h-3.5" /> Reassign
             </button>
             <button
               onClick={() => setIsDeleteTaskOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" /> Delete
             </button>
@@ -206,23 +221,25 @@ export function TaskDetailsPage() {
       <ErrorMessage message={error} onDismiss={() => setError(null)} />
 
       {/* Task Overview Card */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6">
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm p-4 sm:p-6 lg:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 mb-2">
+          <div className="space-y-2 flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
               <StatusBadge status={task.status} />
               <PriorityBadge priority={task.priority} />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">{task.title}</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight break-words">
+              {task.title}
+            </h1>
           </div>
 
           {/* Quick Status Updater */}
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl">
-            <span className="text-xs font-semibold text-slate-500 uppercase">Status:</span>
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl shrink-0">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Status:</span>
             <select
               value={task.status}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="text-xs font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800 focus:ring-1 focus:ring-indigo-500"
+              className="text-xs font-bold bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800 focus:ring-1 focus:ring-indigo-500"
             >
               {STATUS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -234,38 +251,38 @@ export function TaskDetailsPage() {
         </div>
 
         {/* Description */}
-        <div className="text-sm text-slate-700 leading-relaxed bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+        <div className="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50/60 p-4 rounded-xl border border-slate-100 break-words whitespace-pre-wrap">
           {task.description || <span className="italic text-slate-400">No description provided for this task.</span>}
         </div>
 
         {/* Metadata Details Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-slate-100 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-4 border-t border-slate-100 text-xs">
           <div className="p-3 bg-slate-50 rounded-xl">
-            <div className="flex items-center gap-1.5 text-slate-500 font-medium mb-1">
+            <div className="flex items-center gap-1.5 text-slate-500 font-semibold mb-1">
               <Calendar className="w-3.5 h-3.5" /> Deadline
             </div>
-            <div className="font-semibold text-slate-900 text-sm">{formatDate(task.deadline)}</div>
+            <div className="font-bold text-slate-900 text-sm truncate">{formatDate(task.deadline)}</div>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl">
-            <div className="flex items-center gap-1.5 text-slate-500 font-medium mb-1">
+            <div className="flex items-center gap-1.5 text-slate-500 font-semibold mb-1">
               <Users2 className="w-3.5 h-3.5" /> Team
             </div>
-            <div className="font-semibold text-slate-900 text-sm">{task.teamName || '—'}</div>
+            <div className="font-bold text-slate-900 text-sm truncate">{task.teamName || '—'}</div>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl">
-            <div className="flex items-center gap-1.5 text-slate-500 font-medium mb-1">
+            <div className="flex items-center gap-1.5 text-slate-500 font-semibold mb-1">
               <User className="w-3.5 h-3.5" /> Assigned To
             </div>
-            <div className="font-semibold text-slate-900 text-sm">{task.assignedToName || 'Unassigned'}</div>
+            <div className="font-bold text-slate-900 text-sm truncate">{task.assignedToName || 'Unassigned'}</div>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl">
-            <div className="flex items-center gap-1.5 text-slate-500 font-medium mb-1">
+            <div className="flex items-center gap-1.5 text-slate-500 font-semibold mb-1">
               <User className="w-3.5 h-3.5" /> Assigned By
             </div>
-            <div className="font-semibold text-slate-900 text-sm">{task.assignedByName || '—'}</div>
+            <div className="font-bold text-slate-900 text-sm truncate">{task.assignedByName || '—'}</div>
           </div>
         </div>
 
@@ -276,12 +293,12 @@ export function TaskDetailsPage() {
       </div>
 
       {/* Comments Section */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+      <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm p-4 sm:p-6 lg:p-8 space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-indigo-600" />
-            <h2 className="text-lg font-bold text-slate-900">Comments</h2>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900">Comments</h2>
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
               {comments.length}
             </span>
           </div>
@@ -290,7 +307,7 @@ export function TaskDetailsPage() {
         {/* Add Comment Form */}
         <form onSubmit={handleAddComment} className="space-y-3">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
               Add a comment
             </label>
             <textarea
@@ -299,8 +316,8 @@ export function TaskDetailsPage() {
               rows={3}
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Write your comment or update here (max 2000 characters)..."
-              className="w-full px-3.5 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Write your discussion point, update, or question (max 2000 characters)..."
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
             />
           </div>
           <div className="flex items-center justify-between">
@@ -308,7 +325,7 @@ export function TaskDetailsPage() {
             <button
               type="submit"
               disabled={isSubmittingComment || !newComment.trim()}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-colors disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
               {isSubmittingComment ? 'Posting...' : 'Post Comment'}
@@ -317,12 +334,12 @@ export function TaskDetailsPage() {
         </form>
 
         {/* Comments List */}
-        <div className="space-y-4 pt-4">
+        <div className="space-y-3 pt-2">
           {comments.length === 0 ? (
             <EmptyState
               icon={MessageSquare}
               title="No comments yet"
-              description="Be the first to post a discussion point or progress update on this task."
+              description="Be the first to post an update or note on this task."
             />
           ) : (
             comments.map((comment) => {
@@ -334,15 +351,15 @@ export function TaskDetailsPage() {
               return (
                 <div
                   key={comment.id}
-                  className="p-4 bg-slate-50/80 rounded-xl border border-slate-100 space-y-2 hover:bg-slate-50 transition-colors"
+                  className="p-3.5 sm:p-4 bg-slate-50/80 rounded-xl border border-slate-100 space-y-2 hover:bg-slate-50 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">
+                      <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0">
                         {getInitials(comment.userName)}
                       </div>
-                      <div>
-                        <span className="text-xs font-semibold text-slate-900">{comment.userName}</span>
+                      <div className="truncate">
+                        <span className="text-xs font-bold text-slate-900">{comment.userName}</span>
                         <span className="text-[11px] text-slate-400 ml-2">{formatDateTime(comment.createdAt)}</span>
                       </div>
                     </div>
@@ -350,14 +367,16 @@ export function TaskDetailsPage() {
                     {canDeleteComment && (
                       <button
                         onClick={() => setDeletingCommentId(comment.id)}
-                        className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                        className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
                         title="Delete Comment"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
-                  <p className="text-sm text-slate-700 whitespace-pre-wrap pl-9">{comment.content}</p>
+                  <p className="text-xs sm:text-sm text-slate-700 whitespace-pre-wrap pl-9 break-words">
+                    {comment.content}
+                  </p>
                 </div>
               );
             })
@@ -385,7 +404,7 @@ export function TaskDetailsPage() {
         >
           <form onSubmit={handleAssignSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Select Team Member
               </label>
               <select
@@ -403,18 +422,18 @@ export function TaskDetailsPage() {
               </select>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setIsAssignModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50"
+                className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isAssigning || !selectedAssignee}
-                className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm disabled:opacity-50"
+                className="px-4 py-2 text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm disabled:opacity-50"
               >
                 {isAssigning ? 'Reassigning...' : 'Confirm Assignment'}
               </button>
@@ -430,7 +449,7 @@ export function TaskDetailsPage() {
           onClose={() => setIsDeleteTaskOpen(false)}
           onConfirm={handleDeleteTask}
           title="Delete Task"
-          message="Are you sure you want to permanently delete this task and all its comments? This cannot be undone."
+          message="Are you sure you want to permanently delete this task and all associated comments? This action cannot be undone."
           confirmLabel="Delete Task"
           isDestructive
           isLoading={isDeletingTask}
@@ -453,4 +472,3 @@ export function TaskDetailsPage() {
     </div>
   );
 }
-

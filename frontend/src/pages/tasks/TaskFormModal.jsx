@@ -24,7 +24,6 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  // Initialize data
   useEffect(() => {
     if (initialData) {
       setTitle(initialData.title || '');
@@ -39,7 +38,6 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
       setDescription('');
       setStatus('ToDo');
       setPriority('Medium');
-      // Default deadline to 7 days from now
       const d = new Date();
       d.setDate(d.getDate() + 7);
       setDeadline(d.toISOString().split('T')[0]);
@@ -49,15 +47,14 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
     setError(null);
   }, [initialData, isOpen]);
 
-  // Load teams when modal opens
   useEffect(() => {
     if (isOpen) {
       async function loadTeams() {
         setIsLoadingTeams(true);
         try {
           const list = await teamService.getTeams();
-          setTeams(list);
-          if (!isEdit && list.length > 0 && !teamId) {
+          setTeams(list || []);
+          if (!isEdit && list?.length > 0 && !teamId) {
             setTeamId(list[0].id);
           }
         } catch (err) {
@@ -70,7 +67,6 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
     }
   }, [isOpen, isEdit]);
 
-  // Load members when selected team changes
   useEffect(() => {
     if (teamId) {
       async function loadMembers() {
@@ -142,12 +138,18 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={isEdit ? 'Edit Task' : 'Create New Task'} maxWidth="max-w-xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEdit ? 'Edit Task' : 'Create New Task'}
+      maxWidth="max-w-xl"
+    >
       <ErrorMessage message={error} onDismiss={() => setError(null)} />
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Title */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
             Task Title <span className="text-rose-500">*</span>
           </label>
           <input
@@ -156,33 +158,35 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
             maxLength={150}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Implement authentication module"
-            className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="e.g. Implement user authentication"
+            className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
           />
         </div>
 
+        {/* Description */}
         <div>
-          <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
             Description
           </label>
           <textarea
             rows={3}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Provide task details, scope, or instructions..."
-            className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Provide task scope, acceptance criteria, or context..."
+            className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Priority & Deadline */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
               Priority <span className="text-rose-500">*</span>
             </label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
             >
               {PRIORITY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -193,7 +197,7 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
               Deadline <span className="text-rose-500">*</span>
             </label>
             <input
@@ -201,22 +205,21 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
               required
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-            </input>
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+            />
           </div>
         </div>
 
         {!isEdit && (
           <>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Initial Status
               </label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
               >
                 {STATUS_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -226,9 +229,9 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
               </select>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                   Team <span className="text-rose-500">*</span>
                 </label>
                 <select
@@ -239,7 +242,7 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
                     setTeamId(e.target.value);
                     setAssignedToId('');
                   }}
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                 >
                   <option value="">Select Team</option>
                   {teams.map((t) => (
@@ -251,7 +254,7 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                   Assign To <span className="text-rose-500">*</span>
                 </label>
                 <select
@@ -259,7 +262,7 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
                   value={assignedToId}
                   disabled={isLoadingMembers || !teamId}
                   onChange={(e) => setAssignedToId(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all disabled:opacity-50"
                 >
                   <option value="">{teamMembers.length === 0 ? 'No members in team' : 'Select Member'}</option>
                   {teamMembers.map((m) => (
@@ -273,19 +276,19 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
           </>
         )}
 
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+        <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">
           <button
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+            className="px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-sm transition-colors focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-colors focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
           >
             {isSubmitting ? 'Saving...' : isEdit ? 'Update Task' : 'Create Task'}
           </button>
@@ -294,4 +297,3 @@ export function TaskFormModal({ isOpen, onClose, onSuccess, initialData = null }
     </Modal>
   );
 }
-

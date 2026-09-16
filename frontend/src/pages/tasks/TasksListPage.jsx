@@ -3,19 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Filter,
-  Search,
   CheckSquare,
   Edit2,
   Trash2,
-  MoreVertical,
   Calendar,
-  Layers
+  User,
+  Users2,
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { taskService } from '../../services/taskService';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { PriorityBadge } from '../../components/common/PriorityBadge';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { SkeletonTable } from '../../components/common/SkeletonLoader';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Pagination } from '../../components/common/Pagination';
@@ -98,13 +98,13 @@ export function TasksListPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Tasks</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">Tasks</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             {isAdmin && 'All organization tasks across all teams'}
             {isManager && 'Tasks managed within your team'}
-            {!isAdmin && !isManager && 'Your assigned tasks'}
+            {!isAdmin && !isManager && 'Your assigned tasks and deliverables'}
           </p>
         </div>
 
@@ -114,7 +114,7 @@ export function TasksListPage() {
               setEditingTask(null);
               setIsFormModalOpen(true);
             }}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-colors w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Create Task
@@ -128,10 +128,10 @@ export function TasksListPage() {
       <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
         {/* Filters Bar */}
         <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 text-xs font-semibold text-slate-500">
               <Filter className="w-3.5 h-3.5" />
-              Filter:
+              <span>Filter:</span>
             </div>
 
             {/* Status Filter */}
@@ -187,14 +187,14 @@ export function TasksListPage() {
             </select>
           </div>
 
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-200/70 text-slate-700">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-200/80 text-slate-700">
             {tasksResult?.totalCount ?? 0} Tasks
           </span>
         </div>
 
-        {/* Content Table */}
+        {/* Content */}
         {isLoading ? (
-          <LoadingSpinner text="Loading tasks..." />
+          <SkeletonTable rows={6} />
         ) : tasksResult?.items?.length === 0 ? (
           <EmptyState
             icon={CheckSquare}
@@ -212,41 +212,37 @@ export function TasksListPage() {
           />
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Desktop / Tablet Table (>= 768px) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/75 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <th className="py-3.5 px-4 sm:px-6">Title</th>
+                  <tr className="bg-slate-50/75 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="py-3.5 px-6">Title</th>
                     <th className="py-3.5 px-4">Status</th>
                     <th className="py-3.5 px-4">Priority</th>
                     <th className="py-3.5 px-4">Deadline</th>
                     <th className="py-3.5 px-4">Assignee</th>
                     <th className="py-3.5 px-4">Team</th>
-                    <th className="py-3.5 px-4 text-right">Actions</th>
+                    <th className="py-3.5 px-6 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
                   {tasksResult?.items?.map((task) => (
-                    <tr
-                      key={task.id}
-                      className="hover:bg-slate-50/80 transition-colors"
-                    >
+                    <tr key={task.id} className="hover:bg-slate-50/80 transition-colors">
                       <td
                         onClick={() => navigate(`/tasks/${task.id}`)}
-                        className="py-4 px-4 sm:px-6 font-medium text-slate-900 cursor-pointer max-w-xs hover:text-indigo-600"
+                        className="py-4 px-6 font-semibold text-slate-900 cursor-pointer max-w-xs hover:text-indigo-600"
                       >
-                        <div className="font-semibold">{task.title}</div>
+                        <div className="truncate">{task.title}</div>
                         {task.description && (
-                          <div className="text-xs text-slate-500 truncate max-w-xs mt-0.5">
-                            {task.description}
-                          </div>
+                          <div className="text-xs text-slate-500 truncate mt-0.5">{task.description}</div>
                         )}
                       </td>
                       <td className="py-4 px-4">
                         <select
                           value={task.status}
                           onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                          className="text-xs font-semibold rounded-lg px-2 py-1 bg-white border border-slate-200 text-slate-700 hover:border-slate-300 focus:ring-1 focus:ring-indigo-500"
+                          className="text-xs font-bold rounded-lg px-2 py-1 bg-white border border-slate-200 text-slate-700 hover:border-slate-300 focus:ring-1 focus:ring-indigo-500"
                         >
                           {STATUS_OPTIONS.map((opt) => (
                             <option key={opt.value} value={opt.value}>
@@ -259,14 +255,14 @@ export function TasksListPage() {
                         <PriorityBadge priority={task.priority} />
                       </td>
                       <td className="py-4 px-4 text-slate-600">{formatDate(task.deadline)}</td>
-                      <td className="py-4 px-4 text-slate-700">{task.assignedToName || 'Unassigned'}</td>
+                      <td className="py-4 px-4 text-slate-700 font-medium">{task.assignedToName || 'Unassigned'}</td>
                       <td className="py-4 px-4 text-slate-500">{task.teamName || '—'}</td>
-                      <td className="py-4 px-4 text-right">
-                        <div className="inline-flex items-center gap-2">
+                      <td className="py-4 px-6 text-right">
+                        <div className="inline-flex items-center gap-1.5">
                           <button
                             onClick={() => navigate(`/tasks/${task.id}`)}
                             className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                            title="View Details & Comments"
+                            title="View Details"
                           >
                             <CheckSquare className="w-4 h-4" />
                           </button>
@@ -301,6 +297,91 @@ export function TasksListPage() {
               </table>
             </div>
 
+            {/* Mobile Adaptive Cards (< 768px) */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {tasksResult?.items?.map((task) => (
+                <div key={task.id} className="p-4 space-y-3 hover:bg-slate-50/80 transition-colors">
+                  <div
+                    onClick={() => navigate(`/tasks/${task.id}`)}
+                    className="cursor-pointer space-y-1"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-bold text-slate-900 text-sm leading-snug break-words flex-1">
+                        {task.title}
+                      </h3>
+                      <PriorityBadge priority={task.priority} />
+                    </div>
+                    {task.description && (
+                      <p className="text-xs text-slate-500 line-clamp-2">{task.description}</p>
+                    )}
+                  </div>
+
+                  {/* Status & Deadline */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-slate-500">Status:</span>
+                      <select
+                        value={task.status}
+                        onChange={(e) => handleStatusChange(task.id, e.target.value)}
+                        className="text-xs font-bold rounded-lg px-2 py-1 bg-white border border-slate-200 text-slate-800 focus:ring-1 focus:ring-indigo-500"
+                      >
+                        {STATUS_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-xs text-slate-600">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{formatDate(task.deadline)}</span>
+                    </div>
+                  </div>
+
+                  {/* Team, Assignee & Actions */}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                    <div className="flex items-center gap-2 truncate text-slate-600">
+                      <User className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate font-medium">{task.assignedToName || 'Unassigned'}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0 ml-2">
+                      <button
+                        onClick={() => navigate(`/tasks/${task.id}`)}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                      >
+                        Details <ArrowRight className="w-3 h-3" />
+                      </button>
+
+                      {canManageTasks && (
+                        <div className="flex items-center gap-1 ml-1 pl-1 border-l border-slate-200">
+                          <button
+                            onClick={() => {
+                              setEditingTask(task);
+                              setIsFormModalOpen(true);
+                            }}
+                            className="p-1 text-slate-400 hover:text-amber-600"
+                            title="Edit"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setDeletingTaskId(task.id)}
+                            className="p-1 text-slate-400 hover:text-rose-600"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
             <div className="px-4 sm:px-6">
               <Pagination
                 currentPage={page}
@@ -337,7 +418,7 @@ export function TasksListPage() {
           onClose={() => setDeletingTaskId(null)}
           onConfirm={handleDelete}
           title="Delete Task"
-          message="Are you sure you want to delete this task? This action cannot be undone and will remove all associated comments."
+          message="Are you sure you want to delete this task? All comments and updates associated with this task will be permanently deleted."
           confirmLabel="Delete Task"
           isDestructive
           isLoading={isDeleting}
@@ -346,4 +427,3 @@ export function TasksListPage() {
     </div>
   );
 }
-

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { UserCheck, Shield, Users2, Filter, Edit3, UserPlus } from 'lucide-react';
+import { UserCheck, Filter, Edit3, Users2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
 import { teamService } from '../../services/teamService';
-import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { SkeletonTable } from '../../components/common/SkeletonLoader';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Pagination } from '../../components/common/Pagination';
@@ -13,7 +13,7 @@ import { formatDate, getInitials } from '../../utils/formatters';
 import { ROLE_OPTIONS } from '../../utils/constants';
 
 export function UsersListPage() {
-  const { user: currentUser, isAdmin, isManager } = useAuth();
+  const { user: currentUser, isAdmin } = useAuth();
 
   const [usersResult, setUsersResult] = useState(null);
   const [teamsMap, setTeamsMap] = useState({});
@@ -63,12 +63,11 @@ export function UsersListPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Users</h1>
-          <p className="text-sm text-slate-500 mt-1">
-            {isAdmin && 'Manage user accounts, system roles, and team assignments'}
-            {isManager && 'Members belonging to your managed team'}
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight">Users</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Manage organization user directory, role permissions, and team assignments
           </p>
         </div>
       </div>
@@ -79,10 +78,10 @@ export function UsersListPage() {
       <div className="bg-white border border-slate-200/80 rounded-2xl shadow-sm overflow-hidden">
         {/* Filters Header */}
         <div className="p-4 sm:p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+          <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
               <Filter className="w-3.5 h-3.5" />
-              Role:
+              <span>Role:</span>
             </div>
             <select
               value={roleFilter}
@@ -101,14 +100,14 @@ export function UsersListPage() {
             </select>
           </div>
 
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-200/70 text-slate-700">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-200/80 text-slate-700">
             {usersResult?.totalCount ?? 0} Users
           </span>
         </div>
 
-        {/* Content Table */}
+        {/* Content */}
         {isLoading ? (
-          <LoadingSpinner text="Loading users..." />
+          <SkeletonTable rows={6} />
         ) : usersResult?.items?.length === 0 ? (
           <EmptyState
             icon={UserCheck}
@@ -117,15 +116,16 @@ export function UsersListPage() {
           />
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Desktop & Tablet Table (>= 768px) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/75 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    <th className="py-3.5 px-4 sm:px-6">User</th>
+                  <tr className="bg-slate-50/75 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="py-3.5 px-6">User</th>
                     <th className="py-3.5 px-4">Role</th>
                     <th className="py-3.5 px-4">Team</th>
                     <th className="py-3.5 px-4">Joined Date</th>
-                    {isAdmin && <th className="py-3.5 px-4 text-right">Actions</th>}
+                    {isAdmin && <th className="py-3.5 px-6 text-right">Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
@@ -135,28 +135,28 @@ export function UsersListPage() {
 
                     return (
                       <tr key={u.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-4 px-4 sm:px-6">
+                        <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 shadow-inner">
                               {getInitials(u.name)}
                             </div>
-                            <div>
-                              <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                            <div className="min-w-0">
+                              <div className="font-bold text-slate-900 flex items-center gap-1.5 truncate">
                                 {u.name}
                                 {isSelf && (
-                                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                                     You
                                   </span>
                                 )}
                               </div>
-                              <div className="text-xs text-slate-500">{u.email}</div>
+                              <div className="text-xs text-slate-500 truncate">{u.email}</div>
                             </div>
                           </div>
                         </td>
 
                         <td className="py-4 px-4">
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${u.role === 'Admin'
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border ${u.role === 'Admin'
                                 ? 'bg-purple-50 text-purple-700 border-purple-200'
                                 : u.role === 'Manager'
                                   ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
@@ -168,7 +168,10 @@ export function UsersListPage() {
                         </td>
 
                         <td className="py-4 px-4">
-                          <span className={`text-xs font-medium ${u.teamId ? 'text-slate-800' : 'text-slate-400 italic'}`}>
+                          <span
+                            className={`text-xs font-medium ${u.teamId ? 'text-slate-900 font-semibold' : 'text-slate-400 italic'
+                              }`}
+                          >
                             {teamName}
                           </span>
                         </td>
@@ -176,21 +179,21 @@ export function UsersListPage() {
                         <td className="py-4 px-4 text-slate-500 text-xs">{formatDate(u.createdAt)}</td>
 
                         {isAdmin && (
-                          <td className="py-4 px-4 text-right">
+                          <td className="py-4 px-6 text-right">
                             <div className="inline-flex items-center gap-1.5">
                               <button
                                 onClick={() => setRoleModalUser(u)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 hover:text-indigo-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
                                 title="Change Role"
                               >
-                                <Edit3 className="w-3 h-3" /> Role
+                                <Edit3 className="w-3.5 h-3.5" /> Role
                               </button>
                               <button
                                 onClick={() => setTeamModalUser(u)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 hover:text-indigo-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
                                 title="Assign Team"
                               >
-                                <Users2 className="w-3 h-3" /> Team
+                                <Users2 className="w-3.5 h-3.5" /> Team
                               </button>
                             </div>
                           </td>
@@ -202,6 +205,76 @@ export function UsersListPage() {
               </table>
             </div>
 
+            {/* Mobile Adaptive Cards (< 768px) */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {usersResult?.items?.map((u) => {
+                const isSelf = u.id?.toLowerCase() === currentUser?.id?.toLowerCase();
+                const teamName = u.teamId && teamsMap[u.teamId] ? teamsMap[u.teamId] : 'Unassigned';
+
+                return (
+                  <div key={u.id} className="p-4 space-y-3 hover:bg-slate-50/80 transition-colors">
+                    <div className="flex items-start justify-between gap-2.5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 shadow-inner">
+                          {getInitials(u.name)}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-slate-900 text-sm truncate flex items-center gap-1.5">
+                            {u.name}
+                            {isSelf && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                You
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-slate-500 truncate">{u.email}</div>
+                        </div>
+                      </div>
+
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider border shrink-0 ${u.role === 'Admin'
+                            ? 'bg-purple-50 text-purple-700 border-purple-200'
+                            : u.role === 'Manager'
+                              ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                              : 'bg-slate-50 text-slate-700 border-slate-200'
+                          }`}
+                      >
+                        {u.role}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs text-slate-600 pt-1">
+                      <div>
+                        <span className="text-slate-400">Team: </span>
+                        <span className={`font-medium ${u.teamId ? 'text-slate-900 font-semibold' : 'italic text-slate-400'}`}>
+                          {teamName}
+                        </span>
+                      </div>
+                      <span className="text-slate-400">Joined {formatDate(u.createdAt)}</span>
+                    </div>
+
+                    {isAdmin && (
+                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                        <button
+                          onClick={() => setRoleModalUser(u)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" /> Edit Role
+                        </button>
+                        <button
+                          onClick={() => setTeamModalUser(u)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50"
+                        >
+                          <Users2 className="w-3.5 h-3.5" /> Assign Team
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination */}
             <div className="px-4 sm:px-6">
               <Pagination
                 currentPage={page}
@@ -240,4 +313,3 @@ export function UsersListPage() {
     </div>
   );
 }
-
