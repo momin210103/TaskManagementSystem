@@ -24,5 +24,5 @@ public class TaskItem : BaseEntity
 
     public Team? Team { get; set; }
 
-    public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+    public ICollection<Comment> Comments { get; } = new List<Comment>();
 }

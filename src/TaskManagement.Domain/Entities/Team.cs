@@ -8,5 +8,5 @@ public class Team : BaseEntity
 
     public Guid ManagerId { get; set; }
 
-    public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
+    public ICollection<TaskItem> Tasks { get; } = new List<TaskItem>();
 }
