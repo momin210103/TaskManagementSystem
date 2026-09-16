@@ -122,4 +122,22 @@ public class ApplicationDbContextTests
         Assert.Null(refreshTokenEntityType.FindProperty(nameof(RefreshToken.IsExpired)));
         Assert.Null(refreshTokenEntityType.FindProperty(nameof(RefreshToken.IsActive)));
     }
+
+    [Fact]
+    public void ApplicationUser_Constraints_ShouldBeConfiguredCorrectly()
+    {
+        using var context = CreateContext();
+        var userEntityType = context.Model.FindEntityType(typeof(TaskManagement.Infrastructure.Identity.ApplicationUser));
+
+        Assert.NotNull(userEntityType);
+
+        var nameProp = userEntityType.FindProperty(nameof(TaskManagement.Infrastructure.Identity.ApplicationUser.Name));
+        Assert.NotNull(nameProp);
+        Assert.False(nameProp.IsNullable);
+        Assert.Equal(100, nameProp.GetMaxLength());
+
+        var teamIdProp = userEntityType.FindProperty(nameof(TaskManagement.Infrastructure.Identity.ApplicationUser.TeamId));
+        Assert.NotNull(teamIdProp);
+        Assert.True(teamIdProp.IsNullable);
+    }
 }

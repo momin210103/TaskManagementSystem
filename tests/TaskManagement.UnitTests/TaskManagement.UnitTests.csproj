@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
@@ -23,6 +24,7 @@
     <ProjectReference Include="..\..\src\TaskManagement.Application\TaskManagement.Application.csproj" />
     <ProjectReference Include="..\..\src\TaskManagement.Domain\TaskManagement.Domain.csproj" />
     <ProjectReference Include="..\..\src\TaskManagement.Infrastructure\TaskManagement.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\TaskManagement.API\TaskManagement.API.csproj" />
   </ItemGroup>
 
 </Project>
