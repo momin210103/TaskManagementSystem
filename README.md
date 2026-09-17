@@ -9,6 +9,7 @@ A production-ready, role-based Team Task Management System built with **.NET 10 
 The Team Task Management System provides an enterprise-grade platform for organizations to coordinate work, manage team structures, assign tasks, track progress, engage in task-level discussions, and receive automated event notifications.
 
 The application strictly enforces **Role-Based Access Control (RBAC)** and **Resource-Based / Scope-Based Authorization** across three distinct organizational roles:
+
 - **Admin**: Full administrative oversight across users, roles, teams, tasks, and system-wide metrics.
 - **Manager**: Scoped team management, task creation, task assignment within their own team, and team-specific performance tracking.
 - **User (Member)**: Individual task execution, status updates, task comments, personal notifications, and individual dashboard metrics.
@@ -48,6 +49,7 @@ The application strictly enforces **Role-Based Access Control (RBAC)** and **Res
 ## 3. Technology Stack
 
 ### Backend
+
 - **Framework**: .NET 10 (ASP.NET Core Web API)
 - **Language**: C# 13
 - **ORM**: Entity Framework Core 10
@@ -58,6 +60,7 @@ The application strictly enforces **Role-Based Access Control (RBAC)** and **Res
 - **Documentation**: Swagger / OpenAPI (`Swashbuckle.AspNetCore` & `Microsoft.AspNetCore.OpenApi`)
 
 ### Frontend
+
 - **Library**: React 18
 - **Build Tool**: Vite 6
 - **Routing**: React Router DOM v6
@@ -66,10 +69,12 @@ The application strictly enforces **Role-Based Access Control (RBAC)** and **Res
 - **Styling**: Tailwind CSS & custom design system
 
 ### Testing
+
 - **Framework**: xUnit
 - **Database Isolation**: EF Core In-Memory Provider for isolated unit & authorization test suites
 
 ### DevOps & Containerization
+
 - **Web Server / Reverse Proxy**: Nginx Alpine (SPA routing fallback + `/api/` reverse proxy)
 - **Containers**: Multi-stage Dockerfiles (`backend/Dockerfile`, `frontend/Dockerfile`)
 - **Orchestration**: Docker Compose
@@ -96,12 +101,12 @@ TaskManagement.Infrastructure (Persistence, EF Core, Identity, JWT)
 
 ### Layer Responsibilities
 
-| Project | Responsibilities |
-| :--- | :--- |
-| **`TaskManagement.Domain`** | Enterprise business models (`ApplicationUser`, `Team`, `TaskItem`, `Comment`, `Notification`, `RefreshToken`), Domain Enums (`TaskStatus`, `TaskPriority`, `NotificationType`). Zero external dependencies. |
-| **`TaskManagement.Application`** | Application interfaces (`ITaskService`, `ITeamService`, `IUserService`, etc.), Request/Response DTOs, Business validation rules, Custom exception hierarchy. |
+| Project                             | Responsibilities                                                                                                                                                                                                      |
+| :---------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`TaskManagement.Domain`**         | Enterprise business models (`ApplicationUser`, `Team`, `TaskItem`, `Comment`, `Notification`, `RefreshToken`), Domain Enums (`TaskStatus`, `TaskPriority`, `NotificationType`). Zero external dependencies.           |
+| **`TaskManagement.Application`**    | Application interfaces (`ITaskService`, `ITeamService`, `IUserService`, etc.), Request/Response DTOs, Business validation rules, Custom exception hierarchy.                                                          |
 | **`TaskManagement.Infrastructure`** | `ApplicationDbContext`, EF Core Fluent API configurations, Npgsql migrations, ASP.NET Core Identity integration, JWT token generator, SHA-256 refresh token management, Repositories with database-level aggregation. |
-| **`TaskManagement.API`** | Thin ASP.NET Core Controllers, HTTP middleware pipeline, JWT Bearer configuration, CORS policies, Exception/ProblemDetails handling, Swagger/OpenAPI endpoints. |
+| **`TaskManagement.API`**            | Thin ASP.NET Core Controllers, HTTP middleware pipeline, JWT Bearer configuration, CORS policies, Exception/ProblemDetails handling, Swagger/OpenAPI endpoints.                                                       |
 
 ---
 
@@ -154,10 +159,12 @@ TaskManagementSystem/
 ## 6. Prerequisites
 
 ### For Running with Docker Compose (Recommended)
+
 - **Docker Engine**: $\ge 24.0$ (or Docker Desktop)
 - **Docker Compose**: $\ge 2.20$
 
 ### For Local Development (Without Docker)
+
 - **.NET SDK**: `10.0.x`
 - **Node.js**: `v20.x` or `v22.x`
 - **npm**: $\ge 10.0$
@@ -195,20 +202,25 @@ VITE_API_BASE_URL=/api
 ## 8. Quick Start with Docker Compose
 
 ### 1. Initialize Configuration
+
 ```bash
 cp .env.example .env
 ```
 
 ### 2. Build and Launch Containers
+
 ```bash
 docker compose up --build -d
 ```
 
 ### 3. Verify Container Health
+
 ```bash
 docker compose ps
 ```
-*Expected Output:*
+
+_Expected Output:_
+
 ```text
 NAME                      IMAGE                           STATUS
 taskmanagement_postgres   postgres:17-alpine              Up (healthy)
@@ -217,12 +229,14 @@ taskmanagement_frontend   taskmanagementsystem-frontend   Up (healthy)
 ```
 
 ### 4. Service Endpoints
+
 - **React Frontend**: [http://localhost:3000](http://localhost:3000)
 - **Backend API & Swagger**: [http://localhost:5000/swagger](http://localhost:5000/swagger)
 - **Backend Health Check**: [http://localhost:5000/health](http://localhost:5000/health)
 - **PostgreSQL Server**: `localhost:5433` (Database: `TaskManagementDb`)
 
 ### 5. Stop Containers
+
 ```bash
 # Stop containers (preserves database volume)
 docker compose down
@@ -236,9 +250,11 @@ docker compose down -v
 ## 9. Local Development Setup (Without Docker)
 
 ### 1. Database Setup
+
 Ensure PostgreSQL is running locally and create a database named `TaskManagementDb`.
 
 ### 2. Backend API Setup
+
 ```bash
 cd backend
 
@@ -256,6 +272,7 @@ dotnet run --project src/TaskManagement.API
 ```
 
 ### 3. Frontend Application Setup
+
 ```bash
 cd frontend
 
@@ -272,85 +289,92 @@ npm run dev
 
 When the application starts, the `DatabaseSeeder` automatically seeds default roles, teams, users, and tasks for immediate evaluation:
 
-| Role | Email | Password | Assigned Team / Scope |
-| :--- | :--- | :--- | :--- |
-| **Admin** | `admin@taskmanagement.com` | `Password123!` | System-wide full administrative access |
-| **Manager** | `manager1@taskmanagement.com` | `Password123!` | Manager of **Engineering Team** |
-| **Manager** | `manager2@taskmanagement.com` | `Password123!` | Manager of **QA & Testing Team** |
-| **User (Dev)** | `dev1@taskmanagement.com` | `Password123!` | Member of **Engineering Team** |
-| **User (Dev)** | `dev2@taskmanagement.com` | `Password123!` | Member of **Engineering Team** |
-| **User (QA)** | `qa1@taskmanagement.com` | `Password123!` | Member of **QA & Testing Team** |
+| Role           | Email                         | Password       | Assigned Team / Scope                  |
+| :------------- | :---------------------------- | :------------- | :------------------------------------- |
+| **Admin**      | `admin@taskmanagement.com`    | `Password123!` | System-wide full administrative access |
+| **Manager**    | `manager1@taskmanagement.com` | `Password123!` | Manager of **Engineering Team**        |
+| **Manager**    | `manager2@taskmanagement.com` | `Password123!` | Manager of **QA & Testing Team**       |
+| **User (Dev)** | `dev1@taskmanagement.com`     | `Password123!` | Member of **Engineering Team**         |
+| **User (Dev)** | `dev2@taskmanagement.com`     | `Password123!` | Member of **Engineering Team**         |
+| **User (QA)**  | `qa1@taskmanagement.com`      | `Password123!` | Member of **QA & Testing Team**        |
 
 ---
 
 ## 11. Role & Authorization Matrix
 
-| Feature / Action | Admin | Manager | User (Member) |
-| :--- | :---: | :---: | :---: |
-| **Register & Login** | ✓ | ✓ | ✓ |
-| **View Current User Profile (`/me`)** | ✓ | ✓ | ✓ |
-| **View User Directory** | ✓ (All users) | ✓ (Own team members) | ✗ (Forbidden) |
-| **Update User Roles / Teams** | ✓ | ✗ (Forbidden) | ✗ (Forbidden) |
-| **Create Teams** | ✓ | ✗ (Forbidden) | ✗ (Forbidden) |
-| **View Teams** | ✓ (All teams) | ✓ (Own team) | ✓ (Own team) |
-| **Update Team Details** | ✓ | ✗ (Forbidden) | ✗ (Forbidden) |
-| **Add / Remove Team Members** | ✓ (Any team) | ✓ (Own team only) | ✗ (Forbidden) |
-| **Create Tasks** | ✓ (Any team) | ✓ (Own team only) | ✗ (Forbidden) |
-| **View Tasks** | ✓ (All tasks) | ✓ (Own team tasks) | ✓ (Assigned tasks only) |
-| **Update General Task Details** | ✓ | ✓ (Own team tasks) | ✗ (Forbidden) |
-| **Update Task Status** | ✓ | ✓ (Own team tasks) | ✓ (Assigned tasks only) |
-| **Assign / Reassign Tasks** | ✓ | ✓ (Within own team) | ✗ (Forbidden) |
-| **Delete Tasks** | ✓ | ✓ (Own team tasks) | ✗ (Forbidden) |
-| **Create Comments** | ✓ | ✓ (On own team tasks) | ✓ (On assigned tasks) |
-| **Delete Comments** | ✓ | ✓ (On own team tasks) | ✓ (Own comments only) |
-| **View & Manage Notifications** | ✓ (Own) | ✓ (Own) | ✓ (Own) |
-| **View Dashboard** | ✓ (System metrics) | ✓ (Team metrics) | ✓ (Personal metrics) |
+| Feature / Action                      |       Admin        |        Manager        |      User (Member)      |
+| :------------------------------------ | :----------------: | :-------------------: | :---------------------: |
+| **Register & Login**                  |         ✓          |           ✓           |            ✓            |
+| **View Current User Profile (`/me`)** |         ✓          |           ✓           |            ✓            |
+| **View User Directory**               |   ✓ (All users)    | ✓ (Own team members)  |      ✗ (Forbidden)      |
+| **Update User Roles / Teams**         |         ✓          |     ✗ (Forbidden)     |      ✗ (Forbidden)      |
+| **Create Teams**                      |         ✓          |     ✗ (Forbidden)     |      ✗ (Forbidden)      |
+| **View Teams**                        |   ✓ (All teams)    |     ✓ (Own team)      |      ✓ (Own team)       |
+| **Update Team Details**               |         ✓          |     ✗ (Forbidden)     |      ✗ (Forbidden)      |
+| **Add / Remove Team Members**         |    ✓ (Any team)    |   ✓ (Own team only)   |      ✗ (Forbidden)      |
+| **Create Tasks**                      |    ✓ (Any team)    |   ✓ (Own team only)   |      ✗ (Forbidden)      |
+| **View Tasks**                        |   ✓ (All tasks)    |  ✓ (Own team tasks)   | ✓ (Assigned tasks only) |
+| **Update General Task Details**       |         ✓          |  ✓ (Own team tasks)   |      ✗ (Forbidden)      |
+| **Update Task Status**                |         ✓          |  ✓ (Own team tasks)   | ✓ (Assigned tasks only) |
+| **Assign / Reassign Tasks**           |         ✓          |  ✓ (Within own team)  |      ✗ (Forbidden)      |
+| **Delete Tasks**                      |         ✓          |  ✓ (Own team tasks)   |      ✗ (Forbidden)      |
+| **Create Comments**                   |         ✓          | ✓ (On own team tasks) |  ✓ (On assigned tasks)  |
+| **Delete Comments**                   |         ✓          | ✓ (On own team tasks) |  ✓ (Own comments only)  |
+| **View & Manage Notifications**       |      ✓ (Own)       |        ✓ (Own)        |         ✓ (Own)         |
+| **View Dashboard**                    | ✓ (System metrics) |   ✓ (Team metrics)    |  ✓ (Personal metrics)   |
 
 ---
 
 ## 12. API Endpoint Reference
 
 ### Authentication (`/api/auth`)
+
 - `POST /api/auth/register` — Register a new user account (default role: `User`).
 - `POST /api/auth/login` — Authenticate credentials; returns JWT access token and refresh token.
 - `POST /api/auth/refresh` — Exchange valid refresh token for a new access token and rotated refresh token.
 - `POST /api/auth/logout` — Revoke the active refresh token session.
 
 ### Users (`/api/users`)
+
 - `GET /api/users/me` — Retrieve the authenticated user's profile.
-- `GET /api/users` — Paginated user directory with role and team filters (*Admin, Manager*).
-- `GET /api/users/{id}` — Retrieve user by ID (*Admin, Manager for own team, or Self*).
-- `PATCH /api/users/{id}/role` — Update a user's role (*Admin only*).
-- `PATCH /api/users/{id}/team` — Assign or change a user's team (*Admin only*).
+- `GET /api/users` — Paginated user directory with role and team filters (_Admin, Manager_).
+- `GET /api/users/{id}` — Retrieve user by ID (_Admin, Manager for own team, or Self_).
+- `PATCH /api/users/{id}/role` — Update a user's role (_Admin only_).
+- `PATCH /api/users/{id}/team` — Assign or change a user's team (_Admin only_).
 
 ### Teams (`/api/teams`)
-- `POST /api/teams` — Create a new organization team (*Admin only*).
-- `GET /api/teams` — List teams (*Admin: all teams, Manager/User: own team*).
+
+- `POST /api/teams` — Create a new organization team (_Admin only_).
+- `GET /api/teams` — List teams (_Admin: all teams, Manager/User: own team_).
 - `GET /api/teams/{id}` — Retrieve team details and member list.
-- `PUT /api/teams/{id}` / `PATCH /api/teams/{id}` — Update team name or manager (*Admin only*).
-- `POST /api/teams/{id}/members` — Add a member to the team (*Admin, Manager of team*).
-- `DELETE /api/teams/{id}/members/{userId}` — Remove a member from the team (*Admin, Manager of team*).
+- `PUT /api/teams/{id}` / `PATCH /api/teams/{id}` — Update team name or manager (_Admin only_).
+- `POST /api/teams/{id}/members` — Add a member to the team (_Admin, Manager of team_).
+- `DELETE /api/teams/{id}/members/{userId}` — Remove a member from the team (_Admin, Manager of team_).
 
 ### Tasks (`/api/tasks`)
-- `POST /api/tasks` — Create a new task (*Admin, Manager of team*).
-- `GET /api/tasks` — List paginated tasks with filters (*Status, Priority, Deadline, Team, Assignee*).
+
+- `POST /api/tasks` — Create a new task (_Admin, Manager of team_).
+- `GET /api/tasks` — List paginated tasks with filters (_Status, Priority, Deadline, Team, Assignee_).
 - `GET /api/tasks/{id}` — Retrieve detailed task information.
-- `PUT /api/tasks/{id}` — Update task title, description, priority, deadline (*Admin, Manager of team*).
+- `PUT /api/tasks/{id}` — Update task title, description, priority, deadline (_Admin, Manager of team_).
 - `PATCH /api/tasks/{id}/status` — Transition task status (`ToDo`, `InProgress`, `Done`).
-- `PATCH /api/tasks/{id}/assign` — Assign task to a team member (*Admin, Manager of team*).
-- `DELETE /api/tasks/{id}` — Remove a task (*Admin, Manager of team*).
+- `PATCH /api/tasks/{id}/assign` — Assign task to a team member (_Admin, Manager of team_).
+- `DELETE /api/tasks/{id}` — Remove a task (_Admin, Manager of team_).
 
 ### Comments (`/api/tasks/{taskId}/comments`)
+
 - `POST /api/tasks/{taskId}/comments` — Add a comment to a task.
 - `GET /api/tasks/{taskId}/comments` — Retrieve all comments for a task.
-- `DELETE /api/tasks/{taskId}/comments/{commentId}` — Delete a comment (*Admin, Manager of task team, or Author*).
+- `DELETE /api/tasks/{taskId}/comments/{commentId}` — Delete a comment (_Admin, Manager of task team, or Author_).
 
 ### Notifications (`/api/notifications`)
+
 - `GET /api/notifications` — List paginated notifications for the authenticated user.
 - `PATCH /api/notifications/{id}/read` — Mark a single notification as read.
 - `PATCH /api/notifications/read-all` — Mark all notifications as read for current user.
 
 ### Dashboard (`/api/dashboard`)
+
 - `GET /api/dashboard/summary` — Aggregate task summary metrics scoped to user role.
 - `GET /api/dashboard/tasks` — Paginated and filterable task listing for dashboard views.
 
@@ -361,6 +385,7 @@ When the application starts, the `DatabaseSeeder` automatically seeds default ro
 Detailed database documentation and the complete Mermaid Entity-Relationship diagram are available in [docs/database-er-diagram.md](docs/database-er-diagram.md).
 
 ### Core Entities
+
 - **`AspNetUsers`**: Custom user identity containing `Name`, `Email`, `TeamId`, and timestamps.
 - **`Teams`**: Organization team containing `Name`, `ManagerId`, and navigation to members/tasks.
 - **`Tasks` (`TaskItem`)**: Core work item with `Title`, `Description`, `Status`, `Priority`, `Deadline`, `TeamId`, `AssignedToId`, `AssignedById`.
@@ -380,6 +405,7 @@ dotnet test backend/TaskManagement.sln --configuration Release
 ```
 
 ### Verified Test Results
+
 - **Total Tests**: **322**
 - **Passed**: **322**
 - **Failed**: **0**

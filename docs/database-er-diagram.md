@@ -10,20 +10,20 @@ This document details the complete relational database design and schema for the
 erDiagram
     AspNetUsers ||--o{ AspNetUserRoles : "has roles"
     AspNetRoles ||--o{ AspNetUserRoles : "assigned to"
-    
+
     Teams ||--o{ AspNetUsers : "has members (1:N)"
     AspNetUsers ||--o{ Teams : "manages (ManagerId)"
-    
+
     Teams ||--o{ Tasks : "contains (1:N, Restrict)"
     AspNetUsers ||--o{ Tasks : "assigned to (AssignedToId)"
     AspNetUsers ||--o{ Tasks : "created by (AssignedById)"
-    
+
     Tasks ||--o{ Comments : "has comments (1:N, Cascade)"
     AspNetUsers ||--o{ Comments : "authored by (UserId)"
-    
+
     AspNetUsers ||--o{ Notifications : "receives (1:N)"
     Tasks ||--o{ Notifications : "related task (1:N, SetNull)"
-    
+
     AspNetUsers ||--o{ RefreshTokens : "owns (1:N)"
 
     AspNetUsers {
@@ -109,6 +109,7 @@ erDiagram
 ## 2. Table Schemas & Foreign Key Constraints
 
 ### 2.1 `AspNetUsers`
+
 - **Primary Key**: `Id` (`uuid`)
 - **Foreign Keys**:
   - `TeamId` $\rightarrow$ `Teams.Id` (`ON DELETE SET NULL`)
@@ -118,6 +119,7 @@ erDiagram
   - `TeamId` (`Index`)
 
 ### 2.2 `Teams`
+
 - **Primary Key**: `Id` (`uuid`)
 - **Foreign Keys**:
   - `ManagerId` $\rightarrow$ `AspNetUsers.Id`
@@ -126,6 +128,7 @@ erDiagram
   - `ManagerId` (`Index`)
 
 ### 2.3 `Tasks` (`TaskItem`)
+
 - **Primary Key**: `Id` (`uuid`)
 - **Foreign Keys**:
   - `TeamId` $\rightarrow$ `Teams.Id` (`ON DELETE RESTRICT`)
@@ -140,6 +143,7 @@ erDiagram
   - `Deadline` (`Index`)
 
 ### 2.4 `Comments`
+
 - **Primary Key**: `Id` (`uuid`)
 - **Foreign Keys**:
   - `TaskId` $\rightarrow$ `Tasks.Id` (`ON DELETE CASCADE`)
@@ -149,6 +153,7 @@ erDiagram
   - `UserId` (`Index`)
 
 ### 2.5 `Notifications`
+
 - **Primary Key**: `Id` (`uuid`)
 - **Foreign Keys**:
   - `UserId` $\rightarrow$ `AspNetUsers.Id`
@@ -159,6 +164,7 @@ erDiagram
   - `TaskId` (`Index`)
 
 ### 2.6 `RefreshTokens`
+
 - **Primary Key**: `Id` (`uuid`)
 - **Foreign Keys**:
   - `UserId` $\rightarrow$ `AspNetUsers.Id`
