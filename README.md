@@ -124,3 +124,36 @@ npm run dev
   ```bash
   docker compose down -v
   ```
+
+---
+
+## Continuous Integration (CI/CD)
+
+The repository includes an automated GitHub Actions CI pipeline configured in [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
+### Pipeline Workflow
+
+```text
+Git Push / Pull Request
+        ↓
+GitHub Actions CI Pipeline
+ ├── Backend CI (Ubuntu, .NET 10 SDK)
+ │    ├── dotnet restore (with NuGet caching)
+ │    ├── dotnet build --configuration Release --no-restore
+ │    └── dotnet test --configuration Release --no-build (322 tests)
+ ├── Frontend CI (Ubuntu, Node.js 22.x)
+ │    ├── npm ci (with npm caching)
+ │    └── npm run build (Vite production bundle verification)
+ └── Docker CI (Buildx & Compose Validation)
+      ├── docker compose config validation
+      ├── Dockerfile backend multi-stage image build
+      └── Dockerfile frontend multi-stage image build
+        ↓
+CI Passed (All Checks Green)
+```
+
+### CI Pipeline Features
+- **Triggers**: Executed automatically on every `push` to `main`, `pull_request` targeting `main`, and manual `workflow_dispatch`.
+- **Concurrency Control**: Automatically cancels outdated in-progress runs on subsequent commits (`cancel-in-progress: true`).
+- **Security & Least Privilege**: Explicit read-only repository permissions (`permissions: contents: read`) with zero exposed secrets.
+
