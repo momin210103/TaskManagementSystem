@@ -153,7 +153,7 @@ CI Passed (All Checks Green)
 ```
 
 ### CI Pipeline Features
+
 - **Triggers**: Executed automatically on every `push` to `main`, `pull_request` targeting `main`, and manual `workflow_dispatch`.
 - **Concurrency Control**: Automatically cancels outdated in-progress runs on subsequent commits (`cancel-in-progress: true`).
 - **Security & Least Privilege**: Explicit read-only repository permissions (`permissions: contents: read`) with zero exposed secrets.
-
