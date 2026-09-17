@@ -8,10 +8,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
+builder.Services.AddHealthChecks();
 
 const string corsPolicy = "AllowConfiguredOrigins";
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:3000", "http://localhost:5173"];
+    ?? ["http://localhost:3000", "http://localhost:5173", "http://localhost:80", "http://localhost:8080", "http://localhost"];
 
 builder.Services.AddCors(options =>
 {
@@ -96,6 +97,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 await DatabaseSeeder.SeedAsync(app.Services).ConfigureAwait(false);
 

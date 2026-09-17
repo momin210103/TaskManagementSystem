@@ -1,0 +1,14 @@
+bin/
+obj/
+TestResults/
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.trx
+*.log
+logs/
+.git/
+.gitignore
+

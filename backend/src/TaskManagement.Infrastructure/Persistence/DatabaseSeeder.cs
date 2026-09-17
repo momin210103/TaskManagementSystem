@@ -21,6 +21,11 @@ public static class DatabaseSeeder
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
+        if (context.Database.IsRelational())
+        {
+            await context.Database.MigrateAsync().ConfigureAwait(false);
+        }
+
         await IdentityRoleSeeder.SeedRolesAsync(roleManager).ConfigureAwait(false);
         var users = await SeedUsersAsync(userManager).ConfigureAwait(false);
         var teams = await SeedTeamsAsync(context, users).ConfigureAwait(false);

@@ -64,8 +64,3 @@ docker-compose.override.yml
 # Temporary files
 *.tmp
 *.temp
-
-.editorconfig
-AGENTS.md
-Directory.Build.props
-Directory.Packages.props
